@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 services:
   elasticsearch:
     image: "docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4"
@@ -14,6 +14,14 @@ services:
     container_name: kibana
     ports:
       - "5601:5601"
+    networks:
+      - homesensors
+  mosquitto:
+    image: "eclipse-mosquitto:latest"
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
     networks:
       - homesensors
 

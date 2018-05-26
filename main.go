@@ -12,28 +12,8 @@ import (
 	"github.com/eclipse/paho.mqtt.golang"
 )
 
-// Sensors index
-// PUT sensors
-// {
-//     "settings" : {
-//         "number_of_shards" : 1
-//         , "number_of_replicas": 1
-//     },
-//     "mappings" : {
-//         "weather" : {
-//             "properties" : {
-//                 "title" : { "type" : "text" },
-//                 "temp" : { "type" : "float" },
-//                 "humidity" : { "type" : "float" },
-//                 "timestamp" : {
-//"type" : "date" }
-//             }
-//         }
-//     }
-// }
-
 func putDoc(docTitle string, payload []byte) {
-	url := "http://192.168.1.2:9200/sensors/weather"
+	url := "http://192.168.1.13:9200/sensors/weather"
 
 	timestamp := time.Now().Format(time.RFC822Z)
 
@@ -99,7 +79,7 @@ var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 func main() {
 	//mqtt.DEBUG = log.New(os.Stdout, "", 0)
 	mqtt.ERROR = log.New(os.Stdout, "", 0)
-	opts := mqtt.NewClientOptions().AddBroker("test.mosquitto.org:1883").SetClientID("test")
+	opts := mqtt.NewClientOptions().AddBroker("192.168.1.13:1883").SetClientID("mini_server")
 	opts.SetKeepAlive(2 * time.Second)
 	opts.SetDefaultPublishHandler(f)
 	opts.SetPingTimeout(1 * time.Second)
@@ -114,20 +94,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// for i := 0; i < 5; i++ {
-	// 	text := fmt.Sprintf("this is msg #%d!", i)
-	// 	token := c.Publish("sensors/temp", 0, false, text)
-	// 	token.Wait()
-	// }
-
-	// time.Sleep(6 * time.Second)
-
-	// if token := c.Unsubscribe("sensors/temp"); token.Wait() && token.Error() != nil {
-	// 	fmt.Println(token.Error())
-	// 	os.Exit(1)
-	// }
-
-	// c.Disconnect(250)
 	i := 0
 	dur := 0
 	for i < 1 {
