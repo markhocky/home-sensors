@@ -13,11 +13,11 @@ import (
 )
 
 func putDoc(payload []byte) {
-	elasticUrl := "elasticsearch:9200/sensors/weather"
+	elasticURL := "http://elasticsearch:9200/sensors/weather"
 	timestamp := time.Now().Format(time.RFC822Z)
 
 	type PayloadMessage struct {
-		Title 	 string  `json:"title"`
+		Title    string  `json:"title"`
 		Temp     float64 `json:"temp"`
 		Humidity float64 `json:"humidity"`
 	}
@@ -40,8 +40,6 @@ func putDoc(payload []byte) {
 		Timestamp:      fmt.Sprintf("%s", timestamp),
 	}
 
-	fmt.Printf("Elastic Struct: %+v\n", elasticPayload)
-
 	jsonPayload, err := json.Marshal(elasticPayload)
 
 	if err != nil {
@@ -50,10 +48,10 @@ func putDoc(payload []byte) {
 
 	fmt.Printf("Elastic Doc: %s\n", jsonPayload)
 
-	req, err := http.NewRequest("POST", elasticUrl, bytes.NewBuffer(jsonPayload))
+	req, err := http.NewRequest("POST", elasticURL, bytes.NewBuffer(jsonPayload))
 
 	if err != nil {
-		log.Fatal("Error posting to elasticsearch")
+		log.Printf("Error creating post request: %s", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -61,21 +59,25 @@ func putDoc(payload []byte) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		log.Printf("Error posting doc: %s", err)
+	} else {
+		defer resp.Body.Close()
+		fmt.Println("response Status:", resp.Status)
+		fmt.Println("response Headers:", resp.Header)
 	}
-	defer resp.Body.Close()
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
 }
 
 var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	fmt.Printf("TOPIC: %s\n", msg.Topic())
 	fmt.Printf("MSG: %s\n", msg.Payload())
-	putDoc("testing", msg.Payload())
+	putDoc(msg.Payload())
 }
 
 func main() {
 	//mqtt.DEBUG = log.New(os.Stdout, "", 0)
+	// Pause to make sure mosquitto container is up.
+	time.Sleep(2 * time.Second)
+
 	mqtt.ERROR = log.New(os.Stdout, "", 0)
 	opts := mqtt.NewClientOptions().AddBroker("mosquitto:1883").SetClientID("mini_server")
 	opts.SetKeepAlive(15 * time.Second)
@@ -94,6 +96,7 @@ func main() {
 
 	i := 0
 	for i < 1 {
+		fmt.Println("Sensors loop...")
 		time.Sleep(30 * time.Second)
 	}
 
