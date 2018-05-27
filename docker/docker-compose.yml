@@ -24,6 +24,11 @@ services:
       - "9001:9001"
     networks:
       - homesensors
+  sensors:
+    image: "home-sensors:latest"
+    container_name: sensors
+    networks:
+      - homesensors
 
 volumes:
   esdata:

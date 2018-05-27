@@ -12,19 +12,18 @@ import (
 	"github.com/eclipse/paho.mqtt.golang"
 )
 
-func putDoc(docTitle string, payload []byte) {
-	url := "http://192.168.1.13:9200/sensors/weather"
-
+func putDoc(payload []byte) {
+	elasticUrl := "elasticsearch:9200/sensors/weather"
 	timestamp := time.Now().Format(time.RFC822Z)
 
 	type PayloadMessage struct {
+		Title 	 string  `json:"title"`
 		Temp     float64 `json:"temp"`
 		Humidity float64 `json:"humidity"`
 	}
 
 	type ElasticPayload struct {
 		PayloadMessage
-		Title     string `json:"title"`
 		Timestamp string `json:"timestamp"`
 	}
 
@@ -38,7 +37,6 @@ func putDoc(docTitle string, payload []byte) {
 
 	elasticPayload := ElasticPayload{
 		PayloadMessage: payloadMessage,
-		Title:          docTitle,
 		Timestamp:      fmt.Sprintf("%s", timestamp),
 	}
 
@@ -52,7 +50,7 @@ func putDoc(docTitle string, payload []byte) {
 
 	fmt.Printf("Elastic Doc: %s\n", jsonPayload)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
+	req, err := http.NewRequest("POST", elasticUrl, bytes.NewBuffer(jsonPayload))
 
 	if err != nil {
 		log.Fatal("Error posting to elasticsearch")
@@ -79,17 +77,17 @@ var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 func main() {
 	//mqtt.DEBUG = log.New(os.Stdout, "", 0)
 	mqtt.ERROR = log.New(os.Stdout, "", 0)
-	opts := mqtt.NewClientOptions().AddBroker("192.168.1.13:1883").SetClientID("mini_server")
-	opts.SetKeepAlive(2 * time.Second)
+	opts := mqtt.NewClientOptions().AddBroker("mosquitto:1883").SetClientID("mini_server")
+	opts.SetKeepAlive(15 * time.Second)
 	opts.SetDefaultPublishHandler(f)
-	opts.SetPingTimeout(1 * time.Second)
+	opts.SetPingTimeout(10 * time.Second)
 
 	c := mqtt.NewClient(opts)
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
 
-	if token := c.Subscribe("sensors/testing", 0, nil); token.Wait() && token.Error() != nil {
+	if token := c.Subscribe("sensors/house", 0, nil); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
