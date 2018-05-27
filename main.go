@@ -95,11 +95,8 @@ func main() {
 	}
 
 	i := 0
-	dur := 0
 	for i < 1 {
-		fmt.Printf("Duration: %d\n", dur)
-		time.Sleep(1 * time.Second)
-		dur++
+		time.Sleep(30 * time.Second)
 	}
 
 }
