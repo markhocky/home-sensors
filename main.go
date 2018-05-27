@@ -32,7 +32,7 @@ func putDoc(payload []byte) {
 	err := json.Unmarshal(payload, &payloadMessage)
 
 	if err != nil {
-		log.Fatal("Unable to parse message from sensors.")
+		log.Printf("Unable to parse message from sensors: %s\n", err)
 	}
 
 	elasticPayload := ElasticPayload{
@@ -43,7 +43,7 @@ func putDoc(payload []byte) {
 	jsonPayload, err := json.Marshal(elasticPayload)
 
 	if err != nil {
-		log.Fatal("Error converting elasticsearch payload to json.")
+		log.Printf("Error converting elasticsearch payload to json: %s\n", err)
 	}
 
 	fmt.Printf("Elastic Doc: %s\n", jsonPayload)
@@ -51,7 +51,7 @@ func putDoc(payload []byte) {
 	req, err := http.NewRequest("POST", elasticURL, bytes.NewBuffer(jsonPayload))
 
 	if err != nil {
-		log.Printf("Error creating post request: %s", err)
+		log.Printf("Error creating post request: %s\n", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -59,7 +59,7 @@ func putDoc(payload []byte) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Error posting doc: %s", err)
+		log.Printf("Error posting doc: %s\n", err)
 	} else {
 		defer resp.Body.Close()
 		fmt.Println("response Status:", resp.Status)
