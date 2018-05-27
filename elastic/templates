@@ -1,0 +1,23 @@
+// Sensors index
+PUT sensors
+{
+    "settings" : {
+        "number_of_shards" : 1
+        , "number_of_replicas": 1
+    },
+    "mappings" : {
+        "weather" : {
+            "properties" : {
+                "title" : { "type" : "text" },
+                "temp" : { "type" : "float" },
+                "humidity" : { "type" : "float" },
+                "timestamp" : {
+                    "type" : "date",
+                    "format" :  "dd MMM yy HH:mm Z" }
+            }
+        }
+    }
+}
+
+// Check indices
+GET _cat/indices?v
